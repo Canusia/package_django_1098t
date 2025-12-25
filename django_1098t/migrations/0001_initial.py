@@ -11,8 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('cis', '0025_student_profile_last_reviewed'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        
     ]
 
     operations = [
