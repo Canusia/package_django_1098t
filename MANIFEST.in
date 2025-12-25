@@ -1,0 +1,18 @@
+# MANIFEST.in
+# Include all non-Python files
+
+include LICENSE
+include README.md
+include requirements.txt
+
+# Include templates
+recursive-include django_1098t/templates *
+recursive-include django_1098t/templates_pdf *
+
+# Include migrations
+recursive-include django_1098t/migrations *.py
+
+# Exclude compiled Python files
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude *.pyo

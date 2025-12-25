@@ -1,0 +1,49 @@
+<!-- django_1098t/templates/django_1098t/student_forms_list.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>My 1098-T Tax Forms</h1>
+    
+    {% if forms %}
+        <div class="table-responsive mt-4">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Tax Year</th>
+                        <th>Published Date</th>
+                        <th>Downloads</th>
+                        <th>Last Downloaded</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in forms %}
+                    <tr>
+                        <td><strong>{{ item.form.tax_year }}</strong></td>
+                        <td>{{ item.form.published_at|date:"M d, Y" }}</td>
+                        <td>{{ item.download_count }}</td>
+                        <td>{{ item.last_downloaded|date:"M d, Y g:i A"|default:"Never" }}</td>
+                        <td>
+                            <a href="{{ item.download_url }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-download"></i> Download PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4">
+            <p class="mb-0">No tax forms are currently available for download.</p>
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <h5>About Form 1098-T</h5>
+        <p>Form 1098-T is used to report qualified tuition and related expenses. You may need this form to claim education tax credits on your federal income tax return.</p>
+        <p><strong>Note:</strong> Consult with a tax professional for guidance on how to use this form.</p>
+    </div>
+</div>
+{% endblock %}

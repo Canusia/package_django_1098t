@@ -1,0 +1,4 @@
+# requirements.txt
+
+Django>=3.2,<5.0
+pypdf>=4.0.0
