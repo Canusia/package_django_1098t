@@ -1,0 +1,66 @@
+<!-- django_1098t/templates/django_1098t/admin_publish.html -->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Publish 1098-T Forms</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="tax_year">Tax Year</label>
+                    <select name="tax_year" id="tax_year" class="form-control" required>
+                        {% for year in years %}
+                        <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="action">Action</label>
+                    <select name="action" id="action" class="form-control" required>
+                        <option value="publish_all">Publish for All Eligible Students</option>
+                    </select>
+                    <small class="form-text text-muted">
+                        This will generate and publish 1098-T forms for all students with qualifying transactions. 
+                        Existing forms will be regenerated.
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Publish Forms
+                </button>
+                
+                <a href="{% url 'django_1098t:admin_statistics' %}" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar"></i> View Statistics
+                </a>
+            </form>
+        </div>
+    </div>
+    
+    <div class="alert alert-warning mt-4">
+        <strong>Note:</strong> Publishing forms will:
+        <ul>
+            <li>Generate PDF forms for all students with transactions in the selected year</li>
+            <li>Replace any existing published forms for that year</li>
+            <li>Make forms immediately available for student download</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

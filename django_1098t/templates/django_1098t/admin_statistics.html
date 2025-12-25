@@ -1,0 +1,69 @@
+<!-- django_1098t/templates/django_1098t/admin_statistics.html -->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>1098-T Download Statistics</h1>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <form method="get" class="form-inline">
+                <label for="tax_year" class="mr-2">Tax Year:</label>
+                <select name="tax_year" id="tax_year" class="form-control mr-2">
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year == tax_year|add:0 %}selected{% endif %}>
+                        {{ year }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="?tax_year={{ tax_year }}&export=csv" class="btn btn-success">
+                <i class="fas fa-download"></i> Export to CSV
+            </a>
+            <a href="{% url 'django_1098t:bulk_download' tax_year %}" class="btn btn-info">
+                <i class="fas fa-file-archive"></i> Download All PDFs
+            </a>
+        </div>
+    </div>
+    
+    {% if stats %}
+        <div class="table-responsive mt-4">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Download Count</th>
+                        <th>Last Downloaded</th>
+                        <th>Published At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in stats %}
+                    <tr>
+                        <td>{{ stat.student_id }}</td>
+                        <td>{{ stat.student_name }}</td>
+                        <td>{{ stat.download_count }}</td>
+                        <td>{{ stat.last_downloaded|date:"M d, Y g:i A"|default:"Never" }}</td>
+                        <td>{{ stat.published_at|date:"M d, Y g:i A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4">
+            No published forms found for {{ tax_year }}.
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'django_1098t:admin_publish' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Publishing
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -16,7 +16,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Your Name',
     author_email='your.email@example.com',
-    url='https://github.com/yourusername/django-1098t',
+    url='https://github.com/Canusia/package_django_1098t.git',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     install_requires=[
