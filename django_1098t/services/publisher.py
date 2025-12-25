@@ -24,21 +24,22 @@ class Form1098TPublisher:
         template_path = get_template_path(tax_year)
         self.generator = Form1098TGenerator(template_path)
     
-    def publish_all_students(self) -> Dict[str, any]:
+    def publish_all_students(self, student_ids=None) -> Dict[str, any]:
         """
         Publish 1098-T forms for all eligible students.
         
         Returns:
             Dictionary with success/error counts and details
         """
-        # Get all students with transactions in the tax year
-        start_date = datetime(self.tax_year, 1, 1)
-        end_date = datetime(self.tax_year, 12, 31, 23, 59, 59)
-        
-        student_ids = StudentTransaction.objects.filter(
-            created_on__gte=start_date,
-            created_on__lte=end_date
-        ).values_list('student__id', flat=True).distinct()
+        if not student_ids:
+            # Get all students with transactions in the tax year
+            start_date = datetime(self.tax_year, 1, 1)
+            end_date = datetime(self.tax_year, 12, 31, 23, 59, 59)
+            
+            student_ids = StudentTransaction.objects.filter(
+                created_on__gte=start_date,
+                created_on__lte=end_date
+            ).values_list('student__id', flat=True).distinct()
         
         students = Student.objects.filter(
             id__in=student_ids
@@ -83,17 +84,17 @@ class Form1098TPublisher:
         start_date = datetime(self.tax_year, 1, 1)
         end_date = datetime(self.tax_year, 12, 31, 23, 59, 59)
         
-        # summary = StudentTransaction.objects.get_bulk_1098t_summary(
-        #     student_ids=[student.id],
-        #     start_date=start_date,
-        #     end_date=end_date
-        # ).get(student.id, {'charges': 0.0, 'payments': 0.0, 'scholarships': 0.0})
+        summary = StudentTransaction.objects.get_bulk_1098t_summary(
+            student_ids=[student.id],
+            start_date=start_date,
+            end_date=end_date
+        ).get(student.id, {'charges': 0.0, 'payments': 0.0, 'scholarships': 0.0})
         
-        summary = {
-            'charges': 100.10,
-            'payments': 250.00,
-            'scholarships': 20.00
-        }
+        # summary = {
+        #     'charges': 100.10,
+        #     'payments': 250.00,
+        #     'scholarships': 20.00
+        # }
 
         # Skip if no qualifying transactions
         if summary['payments'] <= 0 and summary['scholarships'] <= 0:

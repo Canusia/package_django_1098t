@@ -1,0 +1,66 @@
+<!-- webapp/django_1098t/django_1098t/templates/django_1098t/student_forms_list.html -->
+
+{% extends "cis/logged-base.html" %}
+{% block title %}My 1098-T Tax Forms{% endblock %}
+
+{% block body %}
+
+<main>
+    <div class="mt-4">
+
+        {{intro|safe}}
+        
+        {% if forms %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Tax Year</th>
+                                            <th>Published Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in forms %}
+                                        <tr>
+                                            <td><strong>{{ item.form.tax_year }}</strong></td>
+                                            <td>{{ item.form.published_at|date:"M d, Y" }}</td>
+                                            
+                                            <td>
+                                                <a href="{{ item.download_url }}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-download"></i> Download PDF
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>            
+            
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <h4 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle"></i> No Tax Forms Available
+                        </h4>
+                        <p class="mb-0">
+                            You do not have any 1098-T tax forms available for download at this time. 
+                            Tax forms are typically published after the end of the calendar year.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+{% endblock %}

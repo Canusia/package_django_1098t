@@ -132,6 +132,11 @@ class Form1098T(models.Model):
         return self.downloads.count()
     
     @property
+    def download_url(self):
+        """Total number of times this form has been downloaded."""
+        return self.get_download_url()
+    
+    @property
     def last_downloaded_at(self):
         """Most recent download timestamp."""
         latest = self.downloads.order_by('-downloaded_at').first()

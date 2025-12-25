@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('tax_year', type=int, help='Tax year (e.g., 2024)')
         parser.add_argument(
             '--student-id',
-            type=int,
+            type=str,
             help='Publish for specific student only'
         )
         parser.add_argument(

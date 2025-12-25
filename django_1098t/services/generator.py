@@ -1,10 +1,10 @@
-# django_1098t/services/generator.py
+# webapp/django_1098t/django_1098t/services/generator.py
 
 from pypdf import PdfReader, PdfWriter
 from typing import Dict, Optional
 import io
 import traceback
-from django_1098t.constants import FILER_NAME, FILER_EIN, FILER_ADDRESS
+from django_1098t.constants import get_filer_info  # Changed import
 
 
 class Form1098TGenerator:
@@ -23,6 +23,8 @@ class Form1098TGenerator:
     
     def __init__(self, template_path: str):
         self.template_path = template_path
+        # Get filer info once during initialization
+        self.filer_info = get_filer_info()
     
     def generate_filled_form(
         self,
@@ -31,21 +33,7 @@ class Form1098TGenerator:
         optional_amounts: Optional[Dict[str, float]] = None,
         checkboxes: Optional[Dict[str, bool]] = None
     ) -> io.BytesIO:
-        """
-        Generate a filled 1098-T PDF form and return as BytesIO object.
-        
-        Args:
-            student_data: Dict with keys: name, tin, address, address2 (optional)
-            amounts: Dict with keys: payments, scholarships
-            optional_amounts: Optional dict with keys: adjustments, scholarship_adjustments, insurance_refund
-            checkboxes: Optional dict with keys: jan_march, halftime, graduate, corrected
-            
-        Returns:
-            BytesIO object containing the filled PDF
-            
-        Raises:
-            Exception if PDF generation fails
-        """
+        """Generate a filled 1098-T PDF form and return as BytesIO object."""
         try:
             reader = PdfReader(self.template_path)
             writer = PdfWriter()
@@ -58,7 +46,8 @@ class Form1098TGenerator:
             if student_data.get('address2'):
                 field_data['student_address2'] = student_data['address2']
             
-            field_data[self.OPTIONAL_FIELD_MAPPING['filer_address']] = FILER_ADDRESS
+            # Use filer info from database
+            # field_data[self.OPTIONAL_FIELD_MAPPING['filer_address']] = self.filer_info['address']
             
             if optional_amounts:
                 self._add_optional_amounts(field_data, optional_amounts)
@@ -90,9 +79,11 @@ class Form1098TGenerator:
         student_data: Dict[str, str],
         amounts: Dict[str, float]
     ) -> Dict[str, str]:
+        # Use filer info from database
         return {
-            'filer_name': FILER_NAME,
-            'filer_ein': FILER_EIN,
+            # 'filer_name': self.filer_info['name'] + '\r\n' + self.filer_info['address'],
+            'filer_name': self.filer_info['name'] + '\n' + self.filer_info['address'],
+            'filer_ein': self.filer_info['ein'],
             'student_name': student_data.get('name', ''),
             'student_tin': student_data.get('tin', ''),
             'student_address': student_data.get('address', ''),

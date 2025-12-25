@@ -4,15 +4,20 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from django_1098t.services.publisher import Form1098TPublisher
-from django_1098t.models import Form1098T
+from ..services.publisher import Form1098TPublisher
+from ..models import Form1098T
 from cis.models.student import Student
 import csv
+
+from django.shortcuts import render
+from django.urls import reverse
+
 from datetime import datetime
 import zipfile
 from io import BytesIO
-from django_1098t.services.storage import Form1098TStorage
+from ..services.storage import Form1098TStorage
 
+from ..forms import PublishIndividualForm1098TForm
 
 @staff_member_required
 def publish_forms_view(request):
@@ -126,3 +131,56 @@ def bulk_download_forms(request, tax_year):
     response['Content-Disposition'] = f'attachment; filename="1098T_Forms_{tax_year}.zip"'
     
     return response
+
+
+
+@staff_member_required
+def form_1098t_list_view(request):
+    """
+    Render the DataTables-powered list view for 1098-T forms.
+    """
+    from cis.menu import cis_menu, draw_menu
+
+
+    # Handle individual publish form submission
+    if request.method == 'POST' and 'publish_individual' in request.POST:
+        form = PublishIndividualForm1098TForm(request.POST)
+        if form.is_valid():
+            student_id = form.cleaned_data['student_id']
+            tax_year = form.cleaned_data['tax_year']
+            regenerate = form.cleaned_data['regenerate']
+            
+            try:
+                student = Student.objects.get(id=student_id)
+                publisher = Form1098TPublisher(tax_year, request.user)
+                result = publisher.publish_student_form(student, regenerate=regenerate)
+                
+                if result == 'published':
+                    messages.success(
+                        request,
+                        f"Successfully published 1098-T for {student.user.first_name} {student.user.last_name} ({tax_year})"
+                    )
+                elif result == 'skipped':
+                    messages.warning(
+                        request,
+                        f"No qualifying transactions found for {student.user.first_name} {student.user.last_name} ({tax_year})"
+                    )
+            except Exception as e:
+                messages.error(request, f"Error publishing form: {str(e)}")
+            
+            return redirect('django_1098t:admin_list')
+    else:
+        form = PublishIndividualForm1098TForm()
+    
+
+    # Use datatables format instead of json
+    api_url = reverse('django_1098t:form1098t-list') + '?format=datatables'
+    menu = draw_menu(cis_menu, 'students', 'f1098t')
+    context = {
+        'menu': menu,
+        'page_title': '1098-T Forms',
+        'publish_individual_form': form,
+        'api_url': api_url,
+    }
+    
+    return render(request, 'django_1098t/form_1098t_list.html', context)

@@ -1,0 +1,237 @@
+<!-- webapp/django_1098t/django_1098t/templates/django_1098t/form_1098t_list.html -->
+
+{% extends "cis/logged-base.html" %}
+{% block title %}{{page_title}}{% endblock %}
+
+{% load templatehelpers %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+
+<script>
+  const CSRF_TOKEN = '{{ csrf_token }}';
+</script>
+
+<main>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6 col-xs-12">
+                <h1 class="h3 mb-4 text-gray-800">{{page_title}}</h1>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <div class="">
+                {% include "cis/messages.html" with messages=messages %}
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#all">All {{page_title}}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#publish_individual">Publish Individual Form</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Tab 1: All Forms -->
+                    <div class="tab-pane active" id="all">
+                        <div class="bg-white border border-top-0">
+                            <div class="col-12 pt-3 mb-3">
+
+                                <table id="records_all" class="table table-striped responsive" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th data-data="tax_year" data-name="tax_year">Tax Year</th>
+                                            <th data-data="published_at" data-name="published_at">Published At</th>
+                                            <th data-data="student_user_last_name" data-name="student__user__last_name">Last Name</th>
+                                            <th data-data="student_user_first_name" data-name="student__user__first_name">First Name</th>
+                                            <th data-data="student_highschool_name" data-name="student__highschool__name">High School</th>
+                                            <th data-data="student_user_email" data-name="student__user__email">Email</th>
+                                            <th data-data="published_by_email" data-name="published_by__email">Published By</th>
+                                            <th data-data="download_count">Downloads</th>
+                                            <th data-data="download_url">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <th></th>
+                                        <th>Year</th>
+                                        <th></th>
+                                        <th>Last Name</th>
+                                        <th>First Name</th>
+                                        <th>High School</th>
+                                        <th>Email</th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Publish Individual Form -->
+                    <div class="tab-pane fade" id="publish_individual">
+                        <div class="bg-white border border-top-0">
+                            <div class="col-12 pt-4 pb-4">
+                                <h4 class="mb-4">Publish 1098-T for Individual Student</h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <form method="post" id="publish-individual-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="publish_individual" value="1">
+                                            
+                                            {% crispy publish_individual_form %}
+                                        </form>
+                                        
+                                        
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                                <div class="alert alert-info mt-4">
+                                            <h6><i class="fas fa-info-circle"></i> Instructions</h6>
+                                            <ul class="mb-0">
+                                                <li>Enter the student's UUID (found in student records)</li>
+                                                <li>Select the tax year for which to generate the form</li>
+                                                <li>Check "Regenerate" to replace existing forms</li>
+                                                <li>The form will only be generated if the student has qualifying transactions</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <!-- end tab-content -->
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    var table;
+    
+    setInterval(function() {
+        if(!table.rows('.selected').any())
+            table.ajax.reload(null, false);
+    }, 5000 * 60);
+
+    $(document).ready(function () {
+        let baseURL = '{{api_url}}'
+        
+        table = $('#records_all').DataTable({
+            initComplete: function () {
+                this.api()
+                    .columns()
+                    .every(function () {
+                        let column = this;
+                        let title = column.footer().textContent;
+        
+                        if(title != '') {
+                            let input = document.createElement('input');
+                            input.className = 'form-control'
+                            input.placeholder = "Search " + title;
+                            column.footer().replaceChildren(input);
+            
+                            input.addEventListener('keyup', $.debounce(1500, () => {
+                                if (column.search() !== this.value) {
+                                    column.search(input.value).draw();
+                                }
+                            }));
+                        }
+                    });
+
+                var state = this.api().state.loaded();
+                if (state) {
+                    this.api().columns().eq(0).each(function (colIdx) {
+                        var colSearch = state.columns[colIdx].search;
+                        if (colSearch.search) {
+                            $('input', this.column(colIdx).footer()).val(colSearch.search);
+                        }
+                    });
+                }
+            },
+            searchDelay: 1500,
+            columnDefs: [
+                {
+                    orderable: false,
+                    className: 'select-checkbox',
+                    targets: 0
+                },
+                {
+                    targets: 6, // Email column
+                    render: function(data, type, row, meta) {
+                        if (type === 'display' && data) {
+                            return '<a href="mailto:' + data + '">' + data + '</a>';
+                        }
+                        return data;
+                    }
+                }
+            ],
+            select: {
+                style: 'os',
+                selector: 'td:first-child'
+            },
+            rowId: 'id',
+            dom: 'B<"float-left mt-3 mb-3"l><"float-right mt-3"f><"row clear">rt<"row"<"col-6"i><"col-6 float-right"p>>',
+            buttons: [
+                {
+                    extend: 'csv',
+                    className: 'btn btn-sm btn-primary text-white',
+                    text: '<i class="fas fa-file-csv text-white"></i>&nbsp;CSV',
+                    titleAttr: 'Export Records in current View to CSV'
+                },
+                {
+                    extend: 'print',
+                    className: 'btn btn-sm btn-primary text-white',
+                    text: '<i class="fas fa-print text-white"></i>&nbsp;Print',
+                    titleAttr: 'Print Records in Current View'
+                },
+            ],
+            orderCellsTop: true,
+            fixedHeader: true,
+            ajax: baseURL,
+            serverSide: true,
+            processing: true,
+            order: [[1, 'desc']],
+            language: {
+                loadingRecords: '&nbsp;',
+            },
+            lengthMenu: [30, 50, 100],
+            columns: [
+                {
+                    searchable: false,
+                    orderable: false,
+                    render: function (data, type, row, meta) {
+                        return ''
+                    }
+                },
+                { data: 'tax_year' },
+                { data: 'published_at' },
+                { data: 'student_user_last_name' },
+                { data: 'student_user_first_name' },
+                { data: 'student_highschool_name' },
+                { data: 'student_user_email' },
+                { data: 'published_by_email' },
+                { 
+                    data: 'download_count',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    searchable: false,
+                    orderable: false,
+                    data: 'download_url',
+                    render: function (data, type, row, meta) {
+                        return "<a class='btn btn-sm btn-primary' href='" + data + "' target='_blank'><i class='fas fa-download'></i> Download</a>"
+                    }
+                }
+            ]
+        });
+    });
+</script>
+
+{% endblock %}

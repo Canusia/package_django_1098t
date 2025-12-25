@@ -45,11 +45,6 @@ INSTALLED_APPS = [
     # ...
     'django_1098t',
 ]
-```
-
-### 2. Configure Settings
-```python
-# settings.py
 
 # Filer Information (Your Institution)
 FORM_1098T_FILER_NAME = 'Your University Name'
@@ -57,6 +52,27 @@ FORM_1098T_FILER_EIN = '12-3456789'
 FORM_1098T_FILER_ADDRESS = '123 University Ave, City, ST 12345'
 FORM_1098T_FILER_PHONE = '555-123-4567'
 ```
+
+### 2. Configure Menu
+```python
+# settings.py
+
+# Staff Menu
+{
+    "label":"1098-T",
+    "name":"f1098t",
+    "url":"django_1098t:admin_list"
+},
+
+# Student Menu
+{
+    "type":"nav-item",
+    "icon":"fas fa-fw fa-document",
+    "name":"f1098t",
+    "label":"1098-T",
+    "url":"django_1098t:student_forms_list"
+},
+
 
 ### 3. Include URLs
 ```python

@@ -4,9 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django_1098t.models import Form1098T, Form1098TDownload
-from django_1098t.services.storage import Form1098TStorage
-
+from ..models import Form1098T, Form1098TDownload
+from ..services.storage import Form1098TStorage
+from cis.utils import user_has_cis_role, user_has_student_role
 
 @login_required
 def download_form(request, form_id):
@@ -16,8 +16,11 @@ def download_form(request, form_id):
     # Get the form
     form = get_object_or_404(Form1098T, id=form_id, is_published=True)
     
-    # Security: Ensure student can only download their own forms
-    if not hasattr(request.user, 'student') or form.student != request.user.student:
+    if request and user_has_student_role(request.user):
+        # Security: Ensure student can only download their own forms
+        if not hasattr(request.user, 'student') or form.student != request.user.student:
+            raise Http404("Form not found")
+    elif request and not user_has_cis_role(request.user):
         raise Http404("Form not found")
     
     # Retrieve file from S3
@@ -62,6 +65,20 @@ def student_forms_list(request):
     if not hasattr(request.user, 'student'):
         raise Http404("Not a student account")
     
+    from django.template import Context, Template
+    from cis.settings.student_portal import student_portal as portal_lang
+    from cis.menu import draw_menu, STUDENT_MENU
+
+    student = request.user.student
+    template = Template(portal_lang(request).from_db().get('tax_docs_blurb', 'Change me'))
+
+    context = Context({
+        'has_banner_id': student.has_banner_id(),
+        'netid': student.user.secondary_email,
+        'emplid': student.user.psid
+    })
+    intro = template.render(context)
+
     forms = Form1098T.objects.filter(
         student=request.user.student,
         is_published=True
@@ -72,11 +89,11 @@ def student_forms_list(request):
     for form in forms:
         forms_with_stats.append({
             'form': form,
-            'download_count': form.download_count,
-            'last_downloaded': form.last_downloaded_at,
             'download_url': form.get_download_url()
         })
     
     return render(request, 'django_1098t/student_forms_list.html', {
+        'intro': intro,
+        'menu': draw_menu(STUDENT_MENU, 'f1098t', '', 'student'),
         'forms': forms_with_stats
     })
