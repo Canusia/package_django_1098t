@@ -4,7 +4,7 @@ from pypdf import PdfReader, PdfWriter
 from typing import Dict, Optional
 import io
 import traceback
-from django_1098t.constants import get_filer_info  # Changed import
+from ..constants import get_filer_info  # Changed import
 
 
 class Form1098TGenerator:

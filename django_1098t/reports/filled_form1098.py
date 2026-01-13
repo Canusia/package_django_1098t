@@ -14,6 +14,7 @@ from crispy_forms.layout import Submit
 from cis.models.student import Student
 from student_transactions.models import StudentTransaction
 
+from decimal import Decimal
 from ..services.generator import Form1098TGenerator
 from ..settings.f1098 import f1098 as f1098_settings
 from ..constants import get_template_path
@@ -189,7 +190,8 @@ class filled_form1098(forms.Form):
         summaries = StudentTransaction.objects.get_bulk_1098t_summary(
             student_ids=student_ids,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            configs=f1098_configs
         )
 
         # Initialize CSV writer
@@ -232,9 +234,9 @@ class filled_form1098(forms.Form):
         with zipfile.ZipFile(b, 'w', zipfile.ZIP_DEFLATED) as zf:  # Add compression
             for student in students:
                 summary = summaries.get(student.id, {
-                    'charges': 0.0,
-                    'payments': 0.0,
-                    'scholarships': 0.0
+                    'charges': Decimal('0.0'),
+                    'payments': Decimal('0.0'),
+                    'scholarships': Decimal('0.0')
                 })
                 
                 # Generate PDF

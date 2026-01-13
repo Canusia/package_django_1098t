@@ -5,10 +5,10 @@ from django.db import transaction
 from django.utils import timezone
 from student_transactions.models import StudentTransaction
 from cis.models.student import Student
-from django_1098t.models import Form1098T
-from django_1098t.services.generator import Form1098TGenerator
-from django_1098t.services.storage import Form1098TStorage
-from django_1098t.constants import get_template_path
+from ..models import Form1098T
+from ..services.generator import Form1098TGenerator
+from ..constants import get_template_path
+from ..services.storage import Form1098TStorage
 from typing import Dict
 
 
@@ -84,17 +84,16 @@ class Form1098TPublisher:
         start_date = datetime(self.tax_year, 1, 1)
         end_date = datetime(self.tax_year, 12, 31, 23, 59, 59)
         
+        from decimal import Decimal
+        from ..settings.f1098 import f1098
+        configs = f1098.from_db()
+
         summary = StudentTransaction.objects.get_bulk_1098t_summary(
             student_ids=[student.id],
             start_date=start_date,
-            end_date=end_date
-        ).get(student.id, {'charges': 0.0, 'payments': 0.0, 'scholarships': 0.0})
-        
-        # summary = {
-        #     'charges': 100.10,
-        #     'payments': 250.00,
-        #     'scholarships': 20.00
-        # }
+            end_date=end_date,
+            configs=configs
+        ).get(student.id, {'charges': Decimal('0.0'), 'payments': Decimal('0.0'), 'scholarships': Decimal('0.0')})        
 
         # Skip if no qualifying transactions
         if summary['payments'] <= 0 and summary['scholarships'] <= 0:
@@ -123,9 +122,9 @@ class Form1098TPublisher:
                 'scholarships': summary['scholarships']
             }
             optional_amounts = {
-                'adjustments': 0.0,
-                'scholarship_adjustments': 0.0,
-                'insurance_refund': 0.0
+                'adjustments': Decimal('0.0'),
+                'scholarship_adjustments': Decimal('0.0'),
+                'insurance_refund': Decimal('0.0')
             }
             
             pdf_bytes = self.generator.generate_filled_form(
@@ -147,8 +146,8 @@ class Form1098TPublisher:
                 tax_year=self.tax_year,
                 payments_received=summary['payments'],
                 scholarships_grants=summary['scholarships'],
-                adjustments=0.0,
-                scholarship_adjustments=0.0,
+                adjustments=Decimal('0.0'),
+                scholarship_adjustments=Decimal('0.0'),
                 student_name=f"{student.user.first_name} {student.user.last_name}",
                 student_tin=student.user.ssn or '',
                 student_address=self._format_student_address(student),
