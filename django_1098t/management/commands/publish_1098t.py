@@ -1,7 +1,7 @@
 # django_1098t/management/commands/publish_1098t.py
 
 from django.core.management.base import BaseCommand
-from django_1098t.services.publisher import Form1098TPublisher
+from ...services.publisher import Form1098TPublisher
 from cis.models.customuser import CustomUser
 
 

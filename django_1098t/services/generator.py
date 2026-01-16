@@ -83,6 +83,7 @@ class Form1098TGenerator:
         return {
             # 'filer_name': self.filer_info['name'] + '\r\n' + self.filer_info['address'],
             'filer_name': self.filer_info['name'] + '\n' + self.filer_info['address'],
+            'service_provider_account_number': self.filer_info.get('service_provider_account', ''),        
             'filer_ein': self.filer_info['ein'],
             'student_name': student_data.get('name', ''),
             'student_tin': student_data.get('tin', ''),

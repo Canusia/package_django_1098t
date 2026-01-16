@@ -55,3 +55,15 @@ class Django1098TConfig(AppConfig):
     def ready(self):
         """Import signals and perform app initialization."""
         pass
+
+
+class DevDjango1098TConfig(AppConfig):
+    """Development app config - when using as submodule."""
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'django_1098t.django_1098t'
+    verbose_name = 'Dev - IRS Form 1098-T'
+    
+    def ready(self):
+        """Import signals and perform app initialization."""
+        pass
+    

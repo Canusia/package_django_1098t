@@ -162,9 +162,13 @@ class Form1098TPublisher:
     
     def _prepare_student_data(self, student: Student) -> Dict:
         """Prepare student data for PDF generation."""
+        user_id = student.user.psid
+        if student.user.psid in [None, '', '-']:
+            user_id = str(student.id)[:20]
         return {
             'name': f"{student.user.first_name} {student.user.last_name}",
             'tin': student.user.ssn or '',
+            'service_provider_account_number': user_id,
             'address': student.user.address1 or '',
             'address2': f"{student.user.city}, {student.user.state} {student.user.postal_code}" if student.user.city else ''
         }
