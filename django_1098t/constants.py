@@ -32,7 +32,6 @@ def get_filer_info():
             'ein': getattr(settings, 'FORM_1098T_FILER_EIN', '12-3456789'),
             'address': getattr(settings, 'FORM_1098T_FILER_ADDRESS', '123 University Ave'),
             'phone': getattr(settings, 'FORM_1098T_FILER_PHONE', '555-123-4567'),
-            'service_provider_account': '',  # Default to empty
         }
 
 
