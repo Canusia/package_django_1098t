@@ -125,7 +125,8 @@ class f1098_data_export(forms.Form):
             'High School', 
             'Qualified Tuition (Box 1)', 
             'Scholarships/Grants (Box 5)',
-            'Payments Received (For reference)'
+            'Payments Received (For reference)',
+            'Service Provider Account Number'
         ])
     
         for student in students:
@@ -137,6 +138,10 @@ class f1098_data_export(forms.Form):
             
             # Only include students with transactions
             if summary['charges'] > 0 or summary['scholarships'] > 0:
+                user_id = student.user.psid
+                if student.user.psid in [None, '', '-']:
+                    user_id = str(student.id)[:20]
+
                 writer.writerow([
                     student.id,
                     f"{student.user.first_name} {student.user.last_name}",
@@ -149,7 +154,8 @@ class f1098_data_export(forms.Form):
                     student.highschool.name,
                     f"{summary['charges']:.2f}",
                     f"{summary['scholarships']:.2f}",
-                    f"{summary['payments']:.2f}"
+                    f"{summary['payments']:.2f}",
+                    user_id
                 ])
         
         now = datetime.datetime.now().strftime("%Y/%m")
