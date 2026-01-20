@@ -115,9 +115,13 @@ class filled_form1098(forms.Form):
         if summary['payments'] <= 0 and summary['scholarships'] <= 0:
             return None, None
         
+        user_id = student.user.psid
+        if student.user.psid in [None, '', '-']:
+            user_id = str(student.id)[:20]
         student_data = {
             'name': f"{student.user.first_name} {student.user.last_name}",
             'tin': student.user.ssn or '',
+            'service_provider_account_number': user_id,
             'address': student.user.address1 or '',
             'address2': f"{student.user.city}, {student.user.state} {student.user.postal_code}" if student.user.city else ''
         }
