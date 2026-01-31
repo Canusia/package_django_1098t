@@ -29,6 +29,12 @@ python manage.py test_1098t_generation <year> --output <filename>
 
 # Run tests
 python -m pytest tests/
+
+# Run a single test file
+python -m pytest tests/test_generator.py
+
+# Run a single test function
+python -m pytest tests/test_generator.py::test_function_name -v
 ```
 
 ## Architecture
@@ -50,6 +56,10 @@ python -m pytest tests/
 - **student_views.py**: Student portal - form list, secure download with access control
 - **api_views.py**: Read-only DRF viewset with DataTables support
 
+### Reports (`django_1098t/reports/`)
+
+Contains report generation logic for 1098-T form analytics and exports.
+
 ### External Dependencies
 
 The app expects these models from the parent project:
@@ -65,6 +75,14 @@ Located in `django_1098t/templates_pdf/f1098t/` with naming convention `{year}.p
 ### Configuration
 
 School info (name, EIN, address, phone) configured via database settings in `django_1098t/settings/f1098.py`. Transaction type filters also configurable.
+
+Django settings (in parent project's `settings.py`):
+```python
+FORM_1098T_FILER_NAME = 'Your University Name'
+FORM_1098T_FILER_EIN = '12-3456789'
+FORM_1098T_FILER_ADDRESS = '123 University Ave, City, ST 12345'
+FORM_1098T_FILER_PHONE = '555-123-4567'
+```
 
 ## URL Namespace
 
