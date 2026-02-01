@@ -2,8 +2,9 @@
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from ..models import Form1098T, Form1098TDownload
 from ..services.storage import Form1098TStorage
 from cis.utils import user_has_cis_role, user_has_student_role
@@ -20,6 +21,12 @@ def download_form(request, form_id):
         # Security: Ensure student can only download their own forms
         if not hasattr(request.user, 'student') or form.student != request.user.student:
             raise Http404("Form not found")
+
+        # Check if student has consented to electronic delivery
+        student = request.user.student
+        if not student.meta or not student.meta.get('form_1098_consent_granted_on'):
+            return redirect('django_1098t:student_forms_list')
+
     elif request and not user_has_cis_role(request.user):
         raise Http404("Form not found")
     
@@ -64,12 +71,29 @@ def student_forms_list(request):
     """
     if not hasattr(request.user, 'student'):
         raise Http404("Not a student account")
-    
+
     from django.template import Context, Template
     from cis.settings.student_portal import student_portal as portal_lang
     from cis.menu import draw_menu, STUDENT_MENU
+    from ..settings.f1098 import f1098
 
     student = request.user.student
+    menu = draw_menu(STUDENT_MENU, 'f1098t', '', 'student')
+
+    # Check if student has consented to electronic delivery
+    needs_consent = not student.meta or not student.meta.get('form_1098_consent_granted_on')
+
+    if needs_consent:
+        # Get consent language from settings
+        settings_data = f1098.from_db()
+        consent_language = settings_data.get('consent_language', '')
+
+        return render(request, 'django_1098t/student_forms_list.html', {
+            'menu': menu,
+            'needs_consent': True,
+            'consent_language': consent_language
+        })
+
     template = Template(portal_lang(request).from_db().get('tax_docs_blurb', 'Change me'))
 
     context = Context({
@@ -83,7 +107,7 @@ def student_forms_list(request):
         student=request.user.student,
         is_published=True
     ).order_by('-tax_year')
-    
+
     # Add download stats to each form
     forms_with_stats = []
     for form in forms:
@@ -91,9 +115,30 @@ def student_forms_list(request):
             'form': form,
             'download_url': form.get_download_url()
         })
-    
+
     return render(request, 'django_1098t/student_forms_list.html', {
         'intro': intro,
-        'menu': draw_menu(STUDENT_MENU, 'f1098t', '', 'student'),
+        'menu': menu,
+        'needs_consent': False,
         'forms': forms_with_stats
     })
+
+
+@login_required
+@require_POST
+def submit_consent(request):
+    """
+    Handle student consent submission for electronic 1098-T forms.
+    """
+    if not hasattr(request.user, 'student'):
+        raise Http404("Not a student account")
+
+    student = request.user.student
+
+    # Store consent timestamp in student meta
+    if student.meta is None:
+        student.meta = {}
+    student.meta['form_1098_consent_granted_on'] = timezone.now().isoformat()
+    student.save()
+
+    return redirect('django_1098t:student_forms_list')

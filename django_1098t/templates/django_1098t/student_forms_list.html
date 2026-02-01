@@ -8,8 +8,40 @@
 <main>
     <div class="mt-4">
 
+        {% if needs_consent %}
+            <div class="row">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Electronic Delivery Consent</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if consent_language %}
+                                <div class="mb-4">
+                                    {{ consent_language|safe }}
+                                </div>
+                            {% endif %}
+
+                            <form method="post" action="{% url 'django_1098t:submit_consent' %}">
+                                {% csrf_token %}
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="consent_checkbox" required>
+                                    <label class="form-check-label" for="consent_checkbox">
+                                        I consent to receive my 1098-T tax form electronically.
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    Submit Consent
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+
         {{intro|safe}}
-        
+
         {% if forms %}
             <div class="row">
                 <div class="col-12">
@@ -59,6 +91,8 @@
                     </div>
                 </div>
             </div>
+        {% endif %}
+
         {% endif %}
     </div>
 </main>

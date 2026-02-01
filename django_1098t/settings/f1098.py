@@ -61,6 +61,14 @@ class SettingForm(forms.Form):
         widget=forms.CheckboxSelectMultiple
     )
 
+    # consent language for electronic 1098-T forms
+    consent_language = forms.CharField(
+        widget=forms.Textarea,
+        help_text='Text shown to students when requesting consent for electronic 1098-T forms',
+        label="Electronic Consent Language",
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
