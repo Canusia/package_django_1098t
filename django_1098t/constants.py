@@ -22,10 +22,10 @@ def get_filer_info():
             'name': configs.get('school_name'),
             'ein': configs.get('school_ein'),
             'address': configs.get('school_address'),
-            'phone': configs.get('school_phone', ' ')  # Optional: get from config if available
+            'phone': configs.get('school_phone', ' '),
+            'service_provider_account': configs.get('service_provider_account', '')  # Add this
         }
     except Exception as e:
-        # Fallback to settings.py values if database lookup fails
         print(f"Warning: Could not load filer info from database: {e}")
         return {
             'name': getattr(settings, 'FORM_1098T_FILER_NAME', 'Your University Name'),

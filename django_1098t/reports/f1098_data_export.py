@@ -100,10 +100,16 @@ class f1098_data_export(forms.Form):
             data.get('created_on_until')[0],
             '%m/%d/%Y'
         )
+
+        from decimal import Decimal
+        from ..settings.f1098 import f1098
+        configs = f1098.from_db()
+
         summaries = StudentTransaction.objects.get_bulk_1098t_summary(
             student_ids=student_ids,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            configs=configs
         )
 
         file_name = "student-tax-data-export_" + datetime.datetime.now().strftime('%Y_%m_%d') + ".csv"
@@ -119,18 +125,23 @@ class f1098_data_export(forms.Form):
             'High School', 
             'Qualified Tuition (Box 1)', 
             'Scholarships/Grants (Box 5)',
-            'Payments Received (For reference)'
+            'Payments Received (For reference)',
+            'Service Provider Account Number'
         ])
     
         for student in students:
             summary = summaries.get(student.id, {
-                'charges': 0.0,
-                'payments': 0.0,
-                'scholarships': 0.0
+                'charges': Decimal('0.0'),
+                'payments': Decimal('0.0'),
+                'scholarships': Decimal('0.0')
             })
             
             # Only include students with transactions
             if summary['charges'] > 0 or summary['scholarships'] > 0:
+                user_id = student.user.psid
+                if student.user.psid in [None, '', '-']:
+                    user_id = str(student.id)[:20]
+
                 writer.writerow([
                     student.id,
                     f"{student.user.first_name} {student.user.last_name}",
@@ -143,7 +154,8 @@ class f1098_data_export(forms.Form):
                     student.highschool.name,
                     f"{summary['charges']:.2f}",
                     f"{summary['scholarships']:.2f}",
-                    f"{summary['payments']:.2f}"
+                    f"{summary['payments']:.2f}",
+                    user_id
                 ])
         
         now = datetime.datetime.now().strftime("%Y/%m")

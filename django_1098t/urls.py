@@ -2,7 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views.student_views import download_form, student_forms_list
+from .views.student_views import download_form, student_forms_list, submit_consent, revoke_consent
 from .views.admin_views import (
     publish_forms_view,
     download_statistics_view,
@@ -21,7 +21,9 @@ urlpatterns = [
     # Student URLs
     path('my-forms/', student_forms_list, name='student_forms_list'),
     path('download/<uuid:form_id>/', download_form, name='download_form'),
-    
+    path('consent/', submit_consent, name='submit_consent'),
+    path('revoke-consent/', revoke_consent, name='revoke_consent'),
+
     # Admin URLs
     path('1098t/list/', form_1098t_list_view, name='admin_list'),  # Add this
     path('admin/publish/', publish_forms_view, name='admin_publish'),

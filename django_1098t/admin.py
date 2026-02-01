@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from django_1098t.models import Form1098T, Form1098TDownload
+from .models import Form1098T, Form1098TDownload
 
 
 @admin.register(Form1098T)

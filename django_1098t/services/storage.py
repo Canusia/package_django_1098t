@@ -2,7 +2,7 @@
 
 from django.core.files.base import ContentFile
 from cis.backends.storage_backend import PrivateMediaStorage
-from django_1098t.constants import STORAGE_PATH_PREFIX
+from ..constants import STORAGE_PATH_PREFIX
 import datetime
 
 

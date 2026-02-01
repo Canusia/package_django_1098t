@@ -9,6 +9,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
 from cis.models.term import Term, AcademicYear
+from student_transactions.models import StudentTransaction
 from cis.models.settings import Setting
 
 from cis.validators import numeric, validate_json
@@ -31,6 +32,50 @@ class SettingForm(forms.Form):
         label="School EIN"
     )
     
+    # what transactions to include for credits
+    credit_pay_types = forms.MultipleChoiceField(
+        choices=StudentTransaction.PAYMENT_TYPES,
+        label='Credit Pay Type(s)',
+        required=True,
+        widget=forms.CheckboxSelectMultiple
+    )
+
+    # subtract refunds from total credit
+    subtract_refunds = forms.BooleanField(
+        label='Subtract Refunds from credit',
+        required=False
+    )
+
+    refund_types = forms.MultipleChoiceField(
+        choices=StudentTransaction.REFUND_TYPES,
+        required=False,
+        label='Refund Type(s) to Include',
+        widget=forms.CheckboxSelectMultiple
+    )
+    
+    # calculate scholarships
+    scholarship_types = forms.MultipleChoiceField(
+        choices=StudentTransaction.SCHOLARSHIP_TYPES,
+        required=True,
+        label='Scholarship Type(s)',
+        widget=forms.CheckboxSelectMultiple
+    )
+
+    # consent language for electronic 1098-T forms
+    consent_language = forms.CharField(
+        widget=forms.Textarea,
+        help_text='Text shown to students when requesting consent for electronic 1098-T forms',
+        label="Electronic Consent Language",
+        required=False
+    )
+
+    # consent checkbox label
+    consent_checkbox_label = forms.CharField(
+        help_text='Label for the consent checkbox (e.g., "I consent to receive my 1098-T tax form electronically.")',
+        label="Consent Checkbox Label",
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
