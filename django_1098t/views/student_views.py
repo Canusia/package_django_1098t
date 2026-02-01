@@ -87,11 +87,16 @@ def student_forms_list(request):
         # Get consent language from settings
         settings_data = f1098.from_db()
         consent_language = settings_data.get('consent_language', '')
+        consent_checkbox_label = settings_data.get(
+            'consent_checkbox_label',
+            'I consent to receive my 1098-T tax form electronically.'
+        )
 
         return render(request, 'django_1098t/student_forms_list.html', {
             'menu': menu,
             'needs_consent': True,
-            'consent_language': consent_language
+            'consent_language': consent_language,
+            'consent_checkbox_label': consent_checkbox_label
         })
 
     template = Template(portal_lang(request).from_db().get('tax_docs_blurb', 'Change me'))

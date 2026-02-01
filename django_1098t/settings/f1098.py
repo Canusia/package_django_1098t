@@ -69,6 +69,13 @@ class SettingForm(forms.Form):
         required=False
     )
 
+    # consent checkbox label
+    consent_checkbox_label = forms.CharField(
+        help_text='Label for the consent checkbox (e.g., "I consent to receive my 1098-T tax form electronically.")',
+        label="Consent Checkbox Label",
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
