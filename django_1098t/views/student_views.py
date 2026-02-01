@@ -142,3 +142,22 @@ def submit_consent(request):
     student.save()
 
     return redirect('django_1098t:student_forms_list')
+
+
+@login_required
+@require_POST
+def revoke_consent(request):
+    """
+    Handle student revoking consent for electronic 1098-T forms.
+    """
+    if not hasattr(request.user, 'student'):
+        raise Http404("Not a student account")
+
+    student = request.user.student
+
+    # Remove consent from student meta
+    if student.meta and 'form_1098_consent_granted_on' in student.meta:
+        del student.meta['form_1098_consent_granted_on']
+        student.save()
+
+    return redirect('django_1098t:student_forms_list')

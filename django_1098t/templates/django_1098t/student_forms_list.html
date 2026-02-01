@@ -85,13 +85,28 @@
                             <i class="fas fa-exclamation-triangle"></i> No Tax Forms Available
                         </h4>
                         <p class="mb-0">
-                            You do not have any 1098-T tax forms available for download at this time. 
+                            You do not have any 1098-T tax forms available for download at this time.
                             Tax forms are typically published after the end of the calendar year.
                         </p>
                     </div>
                 </div>
             </div>
         {% endif %}
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <hr>
+                <p class="text-muted mb-2">
+                    You have consented to receive your 1098-T tax forms electronically.
+                </p>
+                <form method="post" action="{% url 'django_1098t:revoke_consent' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        Revoke Electronic Consent
+                    </button>
+                </form>
+            </div>
+        </div>
 
         {% endif %}
     </div>
