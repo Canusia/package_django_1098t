@@ -93,7 +93,7 @@ class Form1098TPublisher:
             start_date=start_date,
             end_date=end_date,
             configs=configs
-        ).get(student.id, {'charges': Decimal('0.0'), 'payments': Decimal('0.0'), 'scholarships': Decimal('0.0')})        
+        ).get(student.id, {'charges': Decimal('0.0'), 'refunds': Decimal('0.0'), 'payments': Decimal('0.0'), 'scholarships': Decimal('0.0')})        
 
         # Skip if no qualifying transactions
         if summary['payments'] <= 0 and summary['scholarships'] <= 0:
@@ -122,7 +122,7 @@ class Form1098TPublisher:
                 'scholarships': summary['scholarships']
             }
             optional_amounts = {
-                'adjustments': Decimal('0.0'),
+                'adjustments': summary.get('refunds', Decimal('0.0')),
                 'scholarship_adjustments': Decimal('0.0'),
                 'insurance_refund': Decimal('0.0')
             }
@@ -146,7 +146,7 @@ class Form1098TPublisher:
                 tax_year=self.tax_year,
                 payments_received=summary['payments'],
                 scholarships_grants=summary['scholarships'],
-                adjustments=Decimal('0.0'),
+                adjustments=summary.get('refunds', Decimal('0.0')),
                 scholarship_adjustments=Decimal('0.0'),
                 student_name=f"{student.user.first_name} {student.user.last_name}",
                 student_tin=student.user.ssn or '',
