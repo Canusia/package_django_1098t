@@ -14,6 +14,7 @@ def get_filer_info():
     Returns:
         dict with keys: name, ein, address, phone
     """
+    from cis.campus_context import NoCampusContext
     try:
         from .settings.f1098 import f1098 as f1098_setting
         configs = f1098_setting.from_db()
@@ -25,6 +26,10 @@ def get_filer_info():
             'phone': configs.get('school_phone', ' '),
             'service_provider_account': configs.get('service_provider_account', '')  # Add this
         }
+    except NoCampusContext:
+        # Per-campus setting read with no campus set (cis #129): a 1098-T must
+        # carry the right college's filer, never the hard-coded fallback.
+        raise
     except Exception as e:
         print(f"Warning: Could not load filer info from database: {e}")
         return {

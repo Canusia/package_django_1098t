@@ -1,19 +1,20 @@
 # webapp/django_1098t/django_1098t/management/commands/test_1098t_generation.py
 
 import os
-from django.core.management.base import BaseCommand
+from cis.management.campus_command import CampusCommand
 from django.conf import settings
 from ...services.generator import Form1098TGenerator
 from ...constants import get_template_path
 
 
-class Command(BaseCommand):
+class Command(CampusCommand):
     """
     python manage.py test_1098t_generation 2025 --output my_test_form.pdf
     """
     help = 'Test 1098-T PDF generation with sample data'
     
     def add_arguments(self, parser):
+        super().add_arguments(parser)
         parser.add_argument(
             'year',
             type=int,

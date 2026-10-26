@@ -1,14 +1,15 @@
 # django_1098t/management/commands/publish_1098t.py
 
-from django.core.management.base import BaseCommand
+from cis.management.campus_command import CampusCommand
 from ...services.publisher import Form1098TPublisher
 from cis.models.customuser import CustomUser
 
 
-class Command(BaseCommand):
+class Command(CampusCommand):
     help = 'Publish 1098-T forms for a tax year'
     
     def add_arguments(self, parser):
+        super().add_arguments(parser)
         parser.add_argument('tax_year', type=int, help='Tax year (e.g., 2024)')
         parser.add_argument(
             '--student-id',
