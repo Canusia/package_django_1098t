@@ -10,7 +10,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='django-1098t',
-    version='1.0.0',
+    version='1.3.3',
     description='Django app for generating and managing IRS Form 1098-T tax documents',
     long_description=long_description,
     long_description_content_type='text/markdown',
